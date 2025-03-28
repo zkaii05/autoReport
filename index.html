@@ -161,6 +161,8 @@
         </div>
     </div>
     <script>
+        let link = "http://localhost:3000"
+
         let sales_data = {
             "Outlet": "-",
             "Date": "-",
@@ -464,7 +466,7 @@
             });
 
             // Send the extracted data to the server to save it
-            fetch("http://localhost:3000/save-report", { // Use localhost:3000, NOT 127.0.0.1:5500
+            fetch(`${link}/save-report`, { // Use localhost:3000, NOT 127.0.0.1:5500
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(extractedData)
