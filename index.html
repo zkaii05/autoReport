@@ -161,7 +161,18 @@
         </div>
     </div>
     <script>
-        let link = "https://autoreport-0uik.onrender.com"
+        // Static data (previously fetched from backend)
+        let tempData = {
+            "Void Count": "0",
+            "Void Amount": "0",
+            "Student Deal Target": "-",
+            "Strawberry Target": "-",
+            "Red S pearl target": "-",
+            "Wastage Amount": "0",
+            "MTD sales achieved": "0",
+            "MTD Strawberry achieved (Cups)": "0",
+            "MTD Strawberry targets (Cups)": "0"
+        };
 
         let sales_data = {
             "Outlet": "-",
@@ -170,8 +181,8 @@
             "Target": "0",
             "Diff": "0",
             "Monthly Sales Target": "-",
-            "Void Count": "0",
-            "Void": "$0",
+            "Void Count": "-",
+            "Void": "-",
             "Cup Sold": "-",
             "Cup Sold Target": "0",
             "Student Deal target and actual": "-/-",
@@ -187,70 +198,59 @@
         };
 
         document.addEventListener("DOMContentLoaded", function () {
+            // Ensure dynamicInputsContainer exists
             const dynamicInputsContainer = document.getElementById("dynamicInputs");
+            if (!dynamicInputsContainer) {
+                console.error("Error: #dynamicInputsContainer is missing in the HTML.");
+                return;
+            }
 
-            // Define checkboxes that require extra input fields
+            // Target labels mapping (links checkbox values to tempData keys)
             const targetCheckBoxes = {
                 "Void Count": "Void Count",
                 "Void": "Void Amount",
                 "Student Deal target and actual": "Student Deal Target",
                 "Strawberry target and actual": "Strawberry Target",
+                "Red S pearl target and actual": "Red S pearl target",
                 "Wastage": "Wastage Amount",
-                "Red S pearl target and actual": "Red Sugar Pearl Target",
-                "MTD Strawberry targets (Cups)": "MTD Strawberry Target (Cups)",
+                "MTD sales achieved": "MTD sales achieved",
                 "MTD Strawberry achieved (Cups)": "MTD Strawberry achieved (Cups)",
-                "MTD sales achieved": "MTD Sales Achieved (Cups)"
+                "MTD Strawberry targets (Cups)": "MTD Strawberry targets (Cups)"
             };
 
-            fetch("/save-report")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+            // Function to handle checkbox changes
+            document.querySelectorAll(".infoCheckbox").forEach(checkbox => {
+                checkbox.addEventListener("change", function () {
+                    // console.log("tempData: ", tempData)
+                    const labelText = targetCheckBoxes[this.value]; // Get corresponding label text
+                    const inputId = this.value.replace(/\s+/g, '') + "Input"; // Unique ID for input
+
+                    if (this.checked && labelText) {
+                        // Create input field only if it doesn't exist
+                        if (!document.getElementById(inputId)) {
+                            const newInputSection = document.createElement("div");
+                            newInputSection.classList.add("input-section");
+                            newInputSection.innerHTML = `
+                    <h4>${labelText}</h4>
+                    <input type="text" id="${inputId}" placeholder="Enter ${labelText}">
+                `;
+                            dynamicInputsContainer.appendChild(newInputSection);
+
+                            // Prefill the input field if data exists
+                            if (tempData[labelText]) {
+                                document.getElementById(inputId).value = tempData[labelText];
+                            }
+                        }
+                    } else {
+                        // Remove input field if checkbox is unchecked
+                        const existingInput = document.getElementById(inputId);
+                        if (existingInput) {
+                            existingInput.parentElement.remove();
+                        }
                     }
-                    return response.text(); // Read as text first
-                })
-                .then(text => {
-                    try {
-                        const data = JSON.parse(text); // Convert to JSON safely
-                        // console.log("JSON Data Loaded:", data); // Debugging
-
-                        // Your existing code for checkboxes & processing
-                        document.querySelectorAll(".infoCheckbox").forEach(checkbox => {
-                            checkbox.addEventListener("change", function () {
-                                const labelText = targetCheckBoxes[this.value]; // Get target label
-                                const inputId = this.value.replace(/\s+/g, '') + "Input"; // Unique input ID
-
-                                if (this.checked && labelText) {
-                                    // Create input field only if it doesn't exist
-                                    if (!document.getElementById(inputId)) {
-                                        const newInputSection = document.createElement("div");
-                                        newInputSection.classList.add("input-section");
-                                        newInputSection.innerHTML = `
-                                <h4>${labelText}</h4>
-                                <input type="number" id="${inputId}" placeholder="Enter ${labelText}">
-                            `;
-                                        dynamicInputsContainer.appendChild(newInputSection);
-                                    }
-
-                                    // Prefill the input field if data exists
-                                    if (data[labelText]) {
-                                        document.getElementById(inputId).value = data[labelText];
-                                    }
-                                } else {
-                                    // Remove input field if checkbox is unchecked
-                                    const existingInput = document.getElementById(inputId);
-                                    if (existingInput) {
-                                        existingInput.parentElement.remove();
-                                    }
-                                }
-                            });
-                        });
-
-                    } catch (error) {
-                        console.error("Error parsing JSON data:", error);
-                    }
-                })
-                .catch(error => console.error("Error loading JSON file:", error));
+                });
+                // console.log("Temp data: ", tempData);
+            });
 
             document.getElementById("doneButton").addEventListener("click", function () {
 
@@ -387,12 +387,31 @@
                     const inputId = key.replace(/\s+/g, '') + "Input";
                     const inputElement = document.getElementById(inputId);
 
+                    // process everything else but void amount
                     if (inputElement) {
+                        console.log(`Saving value for ${targetCheckBoxes[key]}:`, inputElement.value); // Debug log
                         sales_data[key] = parseFloat(inputElement.value) || 0; // Store numeric value or default to 0
                     } else {
+                        console.log(`Input field missing for ${targetCheckBoxes[key]}`); // Debug missing field
                         sales_data[key] = null; // Set to null if not checked
                     }
+
+                    // processes only void amount
+                    if (inputElement) {
+                        let value = inputElement.value.trim();
+
+                        // Convert currency values to numbers
+                        if (key === "Void") {
+                            sales_data["Void"] = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+                        } else {
+                            sales_data[key] = isNaN(value) ? value : parseFloat(value);
+                        }
+                    } else {
+                        sales_data[key] = null; // If not checked
+                    }
                 });
+
+                // console.log("void amount: ", sales_data["Void"])
 
                 // Store target/actual values
                 if ("Student Deal target and actual" in sales_data) {
@@ -414,16 +433,21 @@
                 sales_data["Diff"] = (parseFloat(sales_data["Sales"].replace(/[^0-9.]/g, '')) - parseFloat(sales_data["Target"].replace(/[^0-9.]/g, ''))).toFixed(2);
                 sales_data["MTD sales achieved"] = (parseFloat(String(sales_data["MTD sales achieved"]).replace(/[^0-9.]/g, '')) + parseFloat(sales_data["Sales"].replace(/[^0-9.]/g, ''))).toFixed(2);
                 sales_data["MTD sales Variance"] = (parseFloat(sales_data["MTD sales achieved"].replace(/[^0-9.]/g, '')) - parseFloat(sales_data["MTD sales targets"].replace(/[^0-9.]/g, ''))).toFixed(2);
+
+                // console.log("Recorded achieved cups: ", sales_data["MTD Strawberry achieved (Cups)"]);
+                // console.log("Counted Strawberry cups: ", totalStrawberryQuantity)
+
                 sales_data["MTD Strawberry achieved (Cups)"] = sales_data["MTD Strawberry achieved (Cups)"] + totalStrawberryQuantity;
                 sales_data["Strawberry variance"] = sales_data["MTD Strawberry achieved (Cups)"] - sales_data["MTD Strawberry targets (Cups)"];
 
-                console.log("1: ", sales_data["MTD Strawberry achieved (Cups)"])
-                console.log("1: ", sales_data["MTD Strawberry targets (Cups)"])
+                // console.log("1: ", sales_data["MTD Strawberry achieved (Cups)"])
+                // console.log("1: ", sales_data["MTD Strawberry targets (Cups)"])
                 console.log("Updated Sales Data:", sales_data);
             });
         })
 
         document.getElementById("generateReportButton").addEventListener("click", function () {
+            // console.log("printing data: \n", sales_data)
             let selectedData = Object.keys(sales_data).filter(key =>
                 document.querySelector(`input[value='${key}']`)?.checked
             ).map(key => `${key}: ${sales_data[key]}`).join("<br>");
@@ -440,40 +464,64 @@
         });
 
         document.getElementById("saveReportButton").addEventListener("click", function () {
-            let reportContent = document.getElementById("reportPreview").innerText;
 
-            // Define the keys to extract
-            const requiredFields = [
-                "Student Deal target and actual",
-                "Strawberry target and actual",
-                "Red S pearl target and actual",
-                "MTD sales achieved",
-                "MTD Strawberry achieved (Cups)",
-                "MTD Strawberry targets (Cups)"
-            ];
+            let reportContent = document.getElementById("reportPreview").innerText;
 
             let extractedData = {};
 
-            // Split content into lines and extract required fields
+            const fieldMapping = {
+                "Void Count": "Void Count",
+                "Void": "Void Amount",
+                "Student Deal target and actual": "Student Deal Target",
+                "Strawberry target and actual": "Strawberry Target",
+                "Red S pearl target and actual": "Red S pearl target",
+                "Wastage": "Wastage Amount",
+                "MTD sales achieved": "MTD sales achieved",
+                "MTD Strawberry achieved (Cups)": "MTD Strawberry achieved (Cups)",
+                "MTD Strawberry targets (Cups)": "MTD Strawberry targets (Cups)"
+            };
+
+            // Extract relevant data from reportContent
             reportContent.split("\n").forEach(line => {
                 let trimmedLine = line.trim();
-                requiredFields.forEach(field => {
-                    if (trimmedLine.startsWith(field)) {
-                        let value = trimmedLine.split(":")[1]?.trim(); // Extract value after colon
-                        extractedData[field] = value;
+                // console.log("Checking line:", trimmedLine); // Debugging log
+
+                // Iterate over fieldMapping keys
+                Object.keys(fieldMapping).forEach(reportField => {
+                    // Remove "(Cups)" from both the reportField and the actual data
+                    let normalizedReportField = reportField.replace(/\(Cups\)/gi, "").trim();
+                    let normalizedLine = trimmedLine.replace(/\(Cups\)/gi, "").trim();
+
+                    let regex = new RegExp(`^\\s*${normalizedReportField}\\s*:\\s*(.*)`, "i"); // Allow spaces before and after
+                    let match = normalizedLine.match(regex);
+
+                    if (match) {
+                        let value = match[1].trim();
+
+
+                        // If it's one of the target fields, extract only the part before "/"
+                        if (["Student Deal Target", "Strawberry Target", "Red S pearl target"].includes(fieldMapping[reportField])) {
+                            value = value.split("/")[0].trim(); // Extract before "/"
+                        }
+
+                        let tempDataField = fieldMapping[reportField]; // Get correct tempData key
+                        extractedData[tempDataField] = value;
+                        console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
+                        // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
+                    } else {
+                        console.log("report field failed:", reportField);
                     }
                 });
             });
 
-            // Send the extracted data to the server to save it
-            fetch(`${link}/save-report`, { // Use localhost:3000, NOT 127.0.0.1:5500
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(extractedData)
-            })
-                .then(response => response.json())  // Ensure response is JSON
-                .then(data => alert(data.message))
-                .catch(error => console.error("Error:", error));
+            // Update tempData with extracted data
+            Object.keys(extractedData).forEach(field => {
+                tempData[field] = extractedData[field];
+            });
+            // console.log("Updated tempData:", reportContent);
+            // console.log("extracted data: ", extractedData);
+            alert("Report data saved successfully!");
+            // console.log("Updated tempData:", tempData);
         });
 
         function getDay(dateString) {
