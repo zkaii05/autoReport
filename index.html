@@ -112,7 +112,7 @@
         <div id="middle" class="section">
             <h3>Select Information to Include</h3>
             <div class="checkbox-container">
-                <!-- place 0, add the check box for the new drinks -->
+                <!-- place 1, add the check box for the new drinks -->
                 <label><input type="checkbox" id="selectAllCheckbox"> <strong>Select All</strong></label>
                 <br>
                 <label><input type="checkbox" class="infoCheckbox" value="Outlet"> Outlet</label>
@@ -162,7 +162,7 @@
     </div>
     <script>
         // Static data (previously fetched from backend)
-        // place 1 to add for the new drink's target and achieved
+        // place 2 to add for the new drink's target and achieved
         let tempData = {
             "Void Count": "0",
             "Void Amount": "0",
@@ -176,7 +176,7 @@
             "MTD Taro targets (Cups)": "0"
         };
 
-        // place 2 to add for the new drink's target and achieved
+        // place 3 to add for the new drink's target and achieved
         let sales_data = {
             "Outlet": "-",
             "Date": "-",
@@ -210,7 +210,7 @@
             }
 
             // Target labels mapping (links checkbox values to tempData keys)
-            // place 3 to add for the new drink's target and achieved
+            // place 4 to add for the new drink's target and achieved
             const targetCheckBoxes = {
                 "Void Count": "Void Count",
                 "Void": "Void Amount",
@@ -361,7 +361,7 @@
                 }
 
                 // Output to console
-                // place 4 to add for the new drink's target and achieved (put the segment it is in)
+                // place 5 to add for the new drink's target and achieved (put the segment it is in)
                 const seasonalItems = sections["SEASONAL"];
                 if (seasonalItems && seasonalItems.length > 0) {
                     console.log("=== SEASONAL ===");
@@ -383,7 +383,7 @@
                 }
 
                 // 🍠 Count total "Taro" drinks in SEASONAL section
-                // place 5 to add for the new drink's target and achieved (add the name for the count)
+                // place 6 to add for the new drink's target and achieved (add the name for the count)
                 let taroTotal = 0;
                 let totalStudentQuantity = 0;
 
