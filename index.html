@@ -102,8 +102,8 @@
                 <textarea id="hourSalesText" placeholder="Enter Hour Sales"></textarea>
             </div>
             <div class="input-section">
-                <h4>Z Reading</h4>
-                <textarea id="zReadingText" placeholder="Enter Z Reading"></textarea>
+                <h4>Item Quantity Sold</h4>
+                <textarea id="zReadingText" placeholder="Enter Item Quantity Sold"></textarea>
             </div>
             <!-- Placeholder for dynamic inputs -->
             <div id="dynamicInputs"></div>
@@ -112,6 +112,7 @@
         <div id="middle" class="section">
             <h3>Select Information to Include</h3>
             <div class="checkbox-container">
+                <!-- place 0, add the check box for the new drinks -->
                 <label><input type="checkbox" id="selectAllCheckbox"> <strong>Select All</strong></label>
                 <br>
                 <label><input type="checkbox" class="infoCheckbox" value="Outlet"> Outlet</label>
@@ -127,22 +128,21 @@
                 <label><input type="checkbox" class="infoCheckbox" value="Cup Sold Target"> Cup Sold Target</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Student Deal target and actual"> Student Deal
                     target and actual</label>
-                <label><input type="checkbox" class="infoCheckbox" value="Strawberry target and actual"> Strawberry
-                    target and actual</label>
+                <!-- <label><input type="checkbox" class="infoCheckbox" value="Strawberry target and actual"> Strawberry target and actual</label> -->
                 <label><input type="checkbox" class="infoCheckbox" value="Wastage"> Wastage</label>
-                <label><input type="checkbox" class="infoCheckbox" value="Red S pearl target and actual"> Red S pearl
-                    target and actual</label>
+                <!-- <label><input type="checkbox" class="infoCheckbox" value="Red S pearl target and actual"> Red S pearl target and actual</label> -->
+                <label><input type="checkbox" class="infoCheckbox" value="Taro target and actual"> Taro target and
+                    actual</label>
                 <label><input type="checkbox" class="infoCheckbox" value="MTD sales targets"> MTD sales targets</label>
                 <label><input type="checkbox" class="infoCheckbox" value="MTD sales achieved"> MTD sales
                     achieved</label>
                 <label><input type="checkbox" class="infoCheckbox" value="MTD sales Variance"> MTD sales
                     Variance</label>
-                <label><input type="checkbox" class="infoCheckbox" value="MTD Strawberry achieved (Cups)"> MTD
-                    Strawberry achieved (Cups)</label>
-                <label><input type="checkbox" class="infoCheckbox" value="MTD Strawberry targets (Cups)"> MTD Strawberry
-                    targets (Cups)</label>
-                <label><input type="checkbox" class="infoCheckbox" value="Strawberry variance"> Strawberry
-                    variance</label>
+                <label><input type="checkbox" class="infoCheckbox" value="MTD Taro achieved (Cups)"> MTD Taro achieved
+                    (Cups)</label>
+                <label><input type="checkbox" class="infoCheckbox" value="MTD Taro targets (Cups)"> MTD Taro targets
+                    (Cups)</label>
+                <label><input type="checkbox" class="infoCheckbox" value="Taro variance"> Taro variance</label>
             </div>
             <button id="generateReportButton">Generate Report</button>
         </div>
@@ -162,18 +162,21 @@
     </div>
     <script>
         // Static data (previously fetched from backend)
+        // place 1 to add for the new drink's target and achieved
         let tempData = {
             "Void Count": "0",
             "Void Amount": "0",
             "Student Deal Target": "-",
             "Strawberry Target": "-",
             "Red S pearl target": "-",
+            "Taro Target": "0",
             "Wastage Amount": "0",
             "MTD sales achieved": "0",
-            "MTD Strawberry achieved (Cups)": "0",
-            "MTD Strawberry targets (Cups)": "0"
+            "MTD Taro achieved (Cups)": "0",
+            "MTD Taro targets (Cups)": "0"
         };
 
+        // place 2 to add for the new drink's target and achieved
         let sales_data = {
             "Outlet": "-",
             "Date": "-",
@@ -187,14 +190,15 @@
             "Cup Sold Target": "0",
             "Student Deal target and actual": "-/-",
             "Strawberry target and actual": "-/-",
+            "Taro target and actual": "-/-",
             "Wastage": "-grams/pkt",
             "Red S pearl target and actual": "-/-",
             "MTD sales targets": "-",
             "MTD sales achieved": "-",
             "MTD sales Variance": "-",
-            "MTD Strawberry achieved (Cups)": "-",
-            "MTD Strawberry targets (Cups)": "-",
-            "Strawberry variance": "-",
+            "MTD Taro achieved (Cups)": "-",
+            "MTD Taro targets (Cups)": "-",
+            "Taro variance": "-",
         };
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -206,16 +210,18 @@
             }
 
             // Target labels mapping (links checkbox values to tempData keys)
+            // place 3 to add for the new drink's target and achieved
             const targetCheckBoxes = {
                 "Void Count": "Void Count",
                 "Void": "Void Amount",
                 "Student Deal target and actual": "Student Deal Target",
                 "Strawberry target and actual": "Strawberry Target",
+                "Taro target and actual": "Taro Target",
                 "Red S pearl target and actual": "Red S pearl target",
                 "Wastage": "Wastage Amount",
                 "MTD sales achieved": "MTD sales achieved",
-                "MTD Strawberry achieved (Cups)": "MTD Strawberry achieved (Cups)",
-                "MTD Strawberry targets (Cups)": "MTD Strawberry targets (Cups)"
+                "MTD Taro achieved (Cups)": "MTD Taro achieved (Cups)",
+                "MTD Taro targets (Cups)": "MTD Taro targets (Cups)"
             };
 
             // Function to handle checkbox changes
@@ -316,71 +322,88 @@
                 let zReadingText = document.getElementById("zReadingText").value.trim();
                 let lines = zReadingText.split("\n");
 
-                let zReadingData = {}; // Object to store parsed values
-                let totalStrawberryQuantity = 0; // Variable to sum up strawberry items
-                let totalStudentQuantity = 0; // Variable to sum up student items
-                let totalRSPQuantity = 0; // Variable to sum up student items
-                let inDiscountSection = false;
-                let discountedItems = new Set();
+                const sections = {};
+                let currentSection = 'UNCATEGORIZED';
+                let i = 0;
 
-                // Define required words that must be in the item name for RSP drinks
-                const requiredWords = ["avocado", "fresh milk", "Milk Dark Tea", "Coconut Smoothie"];
+                while (i < lines.length) {
+                    const item = lines[i];
 
-                for (let i = 0; i < lines.length - 2; i++) {
-                    let line = lines[i].trim();
-
-                    // Detect the start of the discount section
-                    if (line.includes("Discount Information")) {
-                        inDiscountSection = true;
+                    // Check for section name (not a number, followed by number + non-number)
+                    if (
+                        isNaN(item) &&
+                        i + 2 < lines.length &&
+                        !isNaN(lines[i + 1]) &&
+                        isNaN(lines[i + 2])
+                    ) {
+                        currentSection = item.trim();
+                        if (!sections[currentSection]) sections[currentSection] = [];
+                        i++;
                         continue;
                     }
 
-                    // If in the discount section, extract discount names
-                    if (inDiscountSection) {
-                        if (/strawberry/i.test(line)) {
-                            discountedItems.add(line);
-                        }
-                        continue; // Skip processing discount items
+                    // Detect item block: index, item name, quantity
+                    if (
+                        i + 2 < lines.length &&
+                        !isNaN(lines[i]) &&
+                        isNaN(lines[i + 1]) &&
+                        !isNaN(lines[i + 2])
+                    ) {
+                        const itemName = lines[i + 1].trim();
+                        const quantity = parseInt(lines[i + 2], 10);
+                        if (!sections[currentSection]) sections[currentSection] = [];
+                        sections[currentSection].push({ name: itemName, qty: quantity });
+                        i += 3;
+                        continue;
                     }
 
-                    // Regular Z Reading processing
-                    let itemName = line;
-                    let quantity = lines[i + 1]?.trim();
-                    let price = lines[i + 2]?.trim();
-
-                    // Check if the next two lines are numbers
-                    if (!isNaN(quantity) && !isNaN(price)) {
-                        let qty = parseInt(quantity);
-                        zReadingData[itemName] = [qty, parseFloat(price)];
-
-                        // If item is a Strawberry item AND NOT discounted, count it
-                        if (/strawberry/i.test(itemName) && !discountedItems.has(itemName)) {
-                            totalStrawberryQuantity += qty;
-                        }
-
-                        // If item is a Student item AND NOT discounted, count it
-                        if (/student/i.test(itemName) && !discountedItems.has(itemName)) {
-                            totalStudentQuantity += qty;
-                        }
-
-                        // Check if the item name contains "Red Sugar Pearl" AND at least one required word
-                        if (
-                            /Red Sugar Pearl/i.test(itemName) &&
-                            requiredWords.some(word => new RegExp(word, "i").test(itemName)) &&
-                            !discountedItems.has(itemName)
-                        ) {
-                            totalRSPQuantity += qty;
-                        }
-
-                        i += 2; // Skip processed lines
-                    }
+                    i++;
                 }
 
-                // Store extracted data
-                sales_data["Z Reading"] = zReadingData;
+                // Output to console
+                // place 4 to add for the new drink's target and achieved (put the segment it is in)
+                const seasonalItems = sections["SEASONAL"];
+                if (seasonalItems && seasonalItems.length > 0) {
+                    console.log("=== SEASONAL ===");
+                    seasonalItems.forEach(item => {
+                        console.log(`${item.name} — ${item.qty}`);
+                    });
+                } else {
+                    console.log("No SEASONAL items found.");
+                }
 
-                // console.log("Actual Student",totalStudentQuantity);
-                // console.log("Actual RSP",totalRSPQuantity);
+                const studentDeal = sections["PROMO"];
+                if (studentDeal && studentDeal.length > 0) {
+                    console.log("=== PROMO ===");
+                    studentDeal.forEach(item => {
+                        console.log(`${item.name} — ${item.qty}`);
+                    });
+                } else {
+                    console.log("No PROMO items found.");
+                }
+
+                // 🍠 Count total "Taro" drinks in SEASONAL section
+                // place 5 to add for the new drink's target and achieved (add the name for the count)
+                let taroTotal = 0;
+                let totalStudentQuantity = 0;
+
+                seasonalItems.forEach(item => {
+                    if (item.name.toLowerCase().includes("taro")) {
+                        taroTotal += item.qty;
+                    }
+                });
+
+                studentDeal.forEach(item => {
+                    if (item.name.includes("经典珍珠奶茶")) {
+                        totalStudentQuantity += item.qty;
+                    }
+                });
+
+                // console.log(`\nTotal Taro drinks in SEASONAL: ${taroTotal}`);
+                // console.log(`\nTotal Student Deal Classic Milk Tea in PROMO: ${totalStudentQuantity}`);
+
+                // Store extracted data
+                // sales_data["Z Reading"] = zReadingText;
 
                 // Other targets
                 Object.keys(targetCheckBoxes).forEach(key => {
@@ -389,7 +412,7 @@
 
                     // process everything else but void amount
                     if (inputElement) {
-                        console.log(`Saving value for ${targetCheckBoxes[key]}:`, inputElement.value); // Debug log
+                        // console.log(`Saving value for ${targetCheckBoxes[key]}:`, inputElement.value); // Debug log
                         sales_data[key] = parseFloat(inputElement.value) || 0; // Store numeric value or default to 0
                     } else {
                         console.log(`Input field missing for ${targetCheckBoxes[key]}`); // Debug missing field
@@ -414,12 +437,20 @@
                 // console.log("void amount: ", sales_data["Void"])
 
                 // Store target/actual values
+                // place 7 to add for the new drink's target and achieved (for comparison)
                 if ("Student Deal target and actual" in sales_data) {
                     let studentTarget = sales_data["Student Deal target and actual"] || 0;
                     sales_data["Student Deal target and actual"] = `${studentTarget}/${totalStudentQuantity}`;
                 }
 
-                if ("Strawberry target and actual" in sales_data) {
+                if ("Taro target and actual" in sales_data) {
+                    let taroTarget = sales_data["Taro target and actual"] || 0;
+                    sales_data["Taro target and actual"] = `${taroTarget}/${taroTotal}`;
+                }
+
+
+                // Old season drinks
+                /* if ("Strawberry target and actual" in sales_data) {
                     let strawberryTarget = sales_data["Strawberry target and actual"] || 0;
                     sales_data["Strawberry target and actual"] = `${strawberryTarget}/${totalStrawberryQuantity}`;
                 }
@@ -427,7 +458,7 @@
                 if ("Red S pearl target and actual" in sales_data) {
                     let RSPTarget = sales_data["Red S pearl target and actual"] || 0;
                     sales_data["Red S pearl target and actual"] = `${RSPTarget}/${totalRSPQuantity}`;
-                }
+                } */
 
                 // Calculation
                 sales_data["Diff"] = (parseFloat(sales_data["Sales"].replace(/[^0-9.]/g, '')) - parseFloat(sales_data["Target"].replace(/[^0-9.]/g, ''))).toFixed(2);
@@ -437,12 +468,14 @@
                 // console.log("Recorded achieved cups: ", sales_data["MTD Strawberry achieved (Cups)"]);
                 // console.log("Counted Strawberry cups: ", totalStrawberryQuantity)
 
-                sales_data["MTD Strawberry achieved (Cups)"] = sales_data["MTD Strawberry achieved (Cups)"] + totalStrawberryQuantity;
-                sales_data["Strawberry variance"] = sales_data["MTD Strawberry achieved (Cups)"] - sales_data["MTD Strawberry targets (Cups)"];
+                sales_data["MTD Taro achieved (Cups)"] = sales_data["MTD Taro achieved (Cups)"] + taroTotal;
+                sales_data["Taro variance"] = sales_data["MTD Taro achieved (Cups)"] - sales_data["MTD Taro targets (Cups)"];
 
                 // console.log("1: ", sales_data["MTD Strawberry achieved (Cups)"])
                 // console.log("1: ", sales_data["MTD Strawberry targets (Cups)"])
                 console.log("Updated Sales Data:", sales_data);
+
+                alert("Data captured successfully!");
             });
         })
 
@@ -467,18 +500,26 @@
 
             let reportContent = document.getElementById("reportPreview").innerText;
 
+            // ✅ Copy to clipboard
+            navigator.clipboard.writeText(reportContent).then(() => {
+                console.log("Report content copied to clipboard!");
+            }).catch(err => {
+                console.error("Failed to copy to clipboard:", err);
+            });
+
             let extractedData = {};
 
             const fieldMapping = {
                 "Void Count": "Void Count",
                 "Void": "Void Amount",
                 "Student Deal target and actual": "Student Deal Target",
-                "Strawberry target and actual": "Strawberry Target",
-                "Red S pearl target and actual": "Red S pearl target",
+                // "Strawberry target and actual": "Strawberry Target",
+                // "Red S pearl target and actual": "Red S pearl target",
+                "Taro target and actual": "Taro Target",
                 "Wastage": "Wastage Amount",
                 "MTD sales achieved": "MTD sales achieved",
-                "MTD Strawberry achieved (Cups)": "MTD Strawberry achieved (Cups)",
-                "MTD Strawberry targets (Cups)": "MTD Strawberry targets (Cups)"
+                "MTD Taro achieved (Cups)": "MTD Taro achieved (Cups)",
+                "MTD Taro targets (Cups)": "MTD Taro targets (Cups)"
             };
 
             // Extract relevant data from reportContent
@@ -500,13 +541,13 @@
 
 
                         // If it's one of the target fields, extract only the part before "/"
-                        if (["Student Deal Target", "Strawberry Target", "Red S pearl target"].includes(fieldMapping[reportField])) {
+                        if (["Taro Target", "Student Deal Target"/* , "Strawberry Target", "Red S pearl target" */].includes(fieldMapping[reportField])) {
                             value = value.split("/")[0].trim(); // Extract before "/"
                         }
 
                         let tempDataField = fieldMapping[reportField]; // Get correct tempData key
                         extractedData[tempDataField] = value;
-                        console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
+                        // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
                         // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
                     } else {
                         console.log("report field failed:", reportField);
@@ -522,6 +563,7 @@
             // console.log("extracted data: ", extractedData);
             alert("Report data saved successfully!");
             // console.log("Updated tempData:", tempData);
+
         });
 
         function getDay(dateString) {
