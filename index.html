@@ -128,7 +128,7 @@
                 <label><input type="checkbox" class="infoCheckbox" value="Cup Sold Target"> Cup Sold Target</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Student Deal target and actual"> Student Deal
                     target and actual</label>
-                <!-- <label><input type="checkbox" class="infoCheckbox" value="Strawberry target and actual"> Strawberry target and actual</label> -->
+                <label><input type="checkbox" class="infoCheckbox" value="Yoghurt target and actual"> Yoghurt target and actual</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Wastage"> Wastage</label>
                 <!-- <label><input type="checkbox" class="infoCheckbox" value="Red S pearl target and actual"> Red S pearl target and actual</label> -->
                 <label><input type="checkbox" class="infoCheckbox" value="Taro target and actual"> Taro target and
@@ -169,6 +169,7 @@
             "Student Deal Target": "-",
             "Strawberry Target": "-",
             "Red S pearl target": "-",
+            "Yoghurt target": "-",
             "Taro Target": "0",
             "Wastage Amount": "0",
             "MTD sales achieved": "0",
@@ -190,6 +191,7 @@
             "Cup Sold Target": "0",
             "Student Deal target and actual": "-/-",
             "Strawberry target and actual": "-/-",
+            "Yoghurt target and actual": "-/-",
             "Taro target and actual": "-/-",
             "Wastage": "-grams/pkt",
             "Red S pearl target and actual": "-/-",
@@ -216,6 +218,7 @@
                 "Void": "Void Amount",
                 "Student Deal target and actual": "Student Deal Target",
                 "Strawberry target and actual": "Strawberry Target",
+                "Yoghurt target and actual": "Yoghurt Target",
                 "Taro target and actual": "Taro Target",
                 "Red S pearl target and actual": "Red S pearl target",
                 "Wastage": "Wastage Amount",
@@ -406,6 +409,7 @@
                 // place 6 to add for the new drink's target and achieved (add the name for the count)
                 let taroTotal = 0;
                 let totalStudentQuantity = 0;
+                let yoghurtTotal = 0;
 
                 // Taro Drink
                 classicMilkTea.forEach(item => {
@@ -414,15 +418,11 @@
                     }
                 });
 
-                console.log("Taro 1: ", taroTotal);
-
                 classicMilkTeaDelivery.forEach(item => {
                     if (item.name.toLowerCase().includes("taro")) {
                         taroTotal += item.qty;
                     }
                 });
-
-                console.log("Taro 2: ", taroTotal);
 
                 seasonalItems.forEach(item => {
                     if (item.name.toLowerCase().includes("taro")) {
@@ -430,12 +430,16 @@
                     }
                 });
 
-                console.log("Taro 3: ", taroTotal);
-
                 // Student Deal
                 promoDeal.forEach(item => {
                     if (item.name.includes("经典珍珠奶茶")) {
                         totalStudentQuantity += item.qty;
+                    }
+                });
+
+                seasonalItems.forEach(item => {
+                    if (item.name.toLowerCase().includes("酸奶")) {
+                        yoghurtTotal += item.qty;
                     }
                 });
 
@@ -488,6 +492,10 @@
                     sales_data["Taro target and actual"] = `${taroTarget}/${taroTotal}`;
                 }
 
+                if ("Yoghurt target and actual" in sales_data) {
+                    let yoghurtTarget = sales_data["Yoghurt target and actual"] || 0;
+                    sales_data["Yoghurt target and actual"] = `${taroTarget}/${yoghurtTotal}`;
+                }
 
                 // Old season drinks
                 /* if ("Strawberry target and actual" in sales_data) {
@@ -553,7 +561,7 @@
                 "Void Count": "Void Count",
                 "Void": "Void Amount",
                 "Student Deal target and actual": "Student Deal Target",
-                // "Strawberry target and actual": "Strawberry Target",
+                "Yoghurt target and actual": "Yoghurt Target",
                 // "Red S pearl target and actual": "Red S pearl target",
                 "Taro target and actual": "Taro Target",
                 "Wastage": "Wastage Amount",
@@ -581,7 +589,7 @@
 
 
                         // If it's one of the target fields, extract only the part before "/"
-                        if (["Taro Target", "Student Deal Target"/* , "Strawberry Target", "Red S pearl target" */].includes(fieldMapping[reportField])) {
+                        if (["Yoghurt Target", "Taro Target", "Student Deal Target"/* , "Strawberry Target", "Red S pearl target" */].includes(fieldMapping[reportField])) {
                             value = value.split("/")[0].trim(); // Extract before "/"
                         }
 
