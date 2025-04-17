@@ -372,14 +372,34 @@
                     console.log("No SEASONAL items found.");
                 }
 
-                const studentDeal = sections["PROMO"];
-                if (studentDeal && studentDeal.length > 0) {
+                const promoDeal = sections["PROMO"];
+                if (promoDeal && promoDeal.length > 0) {
                     console.log("=== PROMO ===");
-                    studentDeal.forEach(item => {
+                    promoDeal.forEach(item => {
                         console.log(`${item.name} — ${item.qty}`);
                     });
                 } else {
                     console.log("No PROMO items found.");
+                }
+
+                const classicMilkTea = sections["CLASSIC MILK TEA"];
+                if (classicMilkTea && classicMilkTea.length > 0) {
+                    console.log("=== Classic Milk Tea ===");
+                    classicMilkTea.forEach(item => {
+                        console.log(`${item.name} — ${item.qty}`);
+                    });
+                } else {
+                    console.log("No Classic Milk Tea items found.");
+                }
+
+                const classicMilkTeaDelivery = sections["CLASSIC MILK TEA(D)"];
+                if (classicMilkTeaDelivery && classicMilkTeaDelivery.length > 0) {
+                    console.log("=== Classic Milk Tea Delivery ===");
+                    classicMilkTeaDelivery.forEach(item => {
+                        console.log(`${item.name} — ${item.qty}`);
+                    });
+                } else {
+                    console.log("No Delivery Classic Milk Tea items found.");
                 }
 
                 // 🍠 Count total "Taro" drinks in SEASONAL section
@@ -387,13 +407,33 @@
                 let taroTotal = 0;
                 let totalStudentQuantity = 0;
 
+                // Taro Drink
+                classicMilkTea.forEach(item => {
+                    if (item.name.toLowerCase().includes("芋")) {
+                        taroTotal += item.qty;
+                    }
+                });
+
+                console.log("Taro 1: ", taroTotal);
+
+                classicMilkTeaDelivery.forEach(item => {
+                    if (item.name.toLowerCase().includes("taro")) {
+                        taroTotal += item.qty;
+                    }
+                });
+
+                console.log("Taro 2: ", taroTotal);
+
                 seasonalItems.forEach(item => {
                     if (item.name.toLowerCase().includes("taro")) {
                         taroTotal += item.qty;
                     }
                 });
 
-                studentDeal.forEach(item => {
+                console.log("Taro 3: ", taroTotal);
+
+                // Student Deal
+                promoDeal.forEach(item => {
                     if (item.name.includes("经典珍珠奶茶")) {
                         totalStudentQuantity += item.qty;
                     }
@@ -550,7 +590,7 @@
                         // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
                         // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
                     } else {
-                        console.log("report field failed:", reportField);
+                        // console.log("report field failed:", reportField);
                     }
                 });
             });
