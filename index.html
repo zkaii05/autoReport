@@ -128,7 +128,8 @@
                 <label><input type="checkbox" class="infoCheckbox" value="Cup Sold Target"> Cup Sold Target</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Student Deal target and actual"> Student Deal
                     target and actual</label>
-                <label><input type="checkbox" class="infoCheckbox" value="Yoghurt target and actual"> Yoghurt target and actual</label>
+                <label><input type="checkbox" class="infoCheckbox" value="Yoghurt target and actual"> Yoghurt target and
+                    actual</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Wastage"> Wastage</label>
                 <!-- <label><input type="checkbox" class="infoCheckbox" value="Red S pearl target and actual"> Red S pearl target and actual</label> -->
                 <label><input type="checkbox" class="infoCheckbox" value="Taro target and actual"> Taro target and
@@ -138,9 +139,9 @@
                     achieved</label>
                 <label><input type="checkbox" class="infoCheckbox" value="MTD sales Variance"> MTD sales
                     Variance</label>
-                <label><input type="checkbox" class="infoCheckbox" value="MTD Taro achieved (Cups)"> MTD Taro achieved
-                    (Cups)</label>
                 <label><input type="checkbox" class="infoCheckbox" value="MTD Taro targets (Cups)"> MTD Taro targets
+                    (Cups)</label>
+                <label><input type="checkbox" class="infoCheckbox" value="MTD Taro achieved (Cups)"> MTD Taro achieved
                     (Cups)</label>
                 <label><input type="checkbox" class="infoCheckbox" value="Taro variance"> Taro variance</label>
             </div>
@@ -166,10 +167,10 @@
         let tempData = {
             "Void Count": "0",
             "Void Amount": "0",
-            "Student Deal Target": "-",
+            "Student Deal Target": "0",
             "Strawberry Target": "-",
             "Red S pearl target": "-",
-            "Yoghurt target": "-",
+            "Yoghurt target": "0",
             "Taro Target": "0",
             "Wastage Amount": "0",
             "MTD sales achieved": "0",
@@ -258,14 +259,28 @@
                         }
                     }
                 });
-                // console.log("Temp data: ", tempData);
+                console.log("Temp data: ", tempData);
             });
 
             document.getElementById("doneButton").addEventListener("click", function () {
 
                 // Extract Hour Sales from input field
                 let hourSalesText = document.getElementById("hourSalesText").value;
-                let firstLine = hourSalesText.split("\n")[0].trim() || "-";
+
+                let f_lines = hourSalesText.split("\n").map(line => line.trim());
+
+                let asteriskIndex = f_lines.findIndex(line => line.replace(/\s/g, '').match(/^\*+$/));
+
+                let firstLine = "-";
+                if (asteriskIndex !== -1) {
+                    // Look for first non-empty line after the asterisks
+                    for (let i = asteriskIndex + 1; i < f_lines.length; i++) {
+                        if (f_lines[i]) {
+                            firstLine = f_lines[i];
+                            break;
+                        }
+                    }
+                }
 
                 // Extract "From Date"
                 let fromDateMatch = hourSalesText.match(/From Date\s*:\s*\n?(\d{2}\/\d{2}\/\d{4})/);
@@ -367,9 +382,9 @@
                 // place 5 to add for the new drink's target and achieved (put the segment it is in)
                 const seasonalItems = sections["SEASONAL"];
                 if (seasonalItems && seasonalItems.length > 0) {
-                    console.log("=== SEASONAL ===");
+                    // console.log("=== SEASONAL ===");
                     seasonalItems.forEach(item => {
-                        console.log(`${item.name} — ${item.qty}`);
+                        // console.log(`${item.name} — ${item.qty}`);
                     });
                 } else {
                     console.log("No SEASONAL items found.");
@@ -377,9 +392,9 @@
 
                 const promoDeal = sections["PROMO"];
                 if (promoDeal && promoDeal.length > 0) {
-                    console.log("=== PROMO ===");
+                    // console.log("=== PROMO ===");
                     promoDeal.forEach(item => {
-                        console.log(`${item.name} — ${item.qty}`);
+                        // console.log(`${item.name} — ${item.qty}`);
                     });
                 } else {
                     console.log("No PROMO items found.");
@@ -387,9 +402,9 @@
 
                 const classicMilkTea = sections["CLASSIC MILK TEA"];
                 if (classicMilkTea && classicMilkTea.length > 0) {
-                    console.log("=== Classic Milk Tea ===");
+                    // console.log("=== Classic Milk Tea ===");
                     classicMilkTea.forEach(item => {
-                        console.log(`${item.name} — ${item.qty}`);
+                        // console.log(`${item.name} — ${item.qty}`);
                     });
                 } else {
                     console.log("No Classic Milk Tea items found.");
@@ -397,9 +412,9 @@
 
                 const classicMilkTeaDelivery = sections["CLASSIC MILK TEA(D)"];
                 if (classicMilkTeaDelivery && classicMilkTeaDelivery.length > 0) {
-                    console.log("=== Classic Milk Tea Delivery ===");
+                    // console.log("=== Classic Milk Tea Delivery ===");
                     classicMilkTeaDelivery.forEach(item => {
-                        console.log(`${item.name} — ${item.qty}`);
+                        // console.log(`${item.name} — ${item.qty}`);
                     });
                 } else {
                     console.log("No Delivery Classic Milk Tea items found.");
@@ -595,8 +610,7 @@
 
                         let tempDataField = fieldMapping[reportField]; // Get correct tempData key
                         extractedData[tempDataField] = value;
-                        // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
-                        // console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
+                        console.log(`Matched: ${reportField} -> ${tempDataField}: ${value}`);
                     } else {
                         // console.log("report field failed:", reportField);
                     }
